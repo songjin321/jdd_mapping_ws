@@ -14,64 +14,60 @@
 using namespace std;
 
 namespace carto = ::cartographer;
-static void toEulerAngle(const Eigen::Quaterniond& q, double& roll, double& pitch, double& yaw)
-{
-	// roll (x-axis rotation)
-	double sinr_cosp = +2.0 * (q.w() * q.x() + q.y() * q.z());
-	double cosr_cosp = +1.0 - 2.0 * (q.x() * q.x() + q.y() * q.y());
-	roll = atan2(sinr_cosp, cosr_cosp);
 
-	// pitch (y-axis rotation)
-	double sinp = +2.0 * (q.w() * q.y() - q.z() * q.x());
-	if (fabs(sinp) >= 1)
-		pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
-	else
-		pitch = asin(sinp);
+void ExportPbstream(const std::string& pbstream_filename) {
+  carto::io::ProtoStreamReader reader(pbstream_filename);
+  carto::io::ProtoStreamDeserializer deserializer(&reader);
+  carto::mapping::proto::PoseGraph pose_graph_proto = deserializer.pose_graph();
+  for (size_t trajectory_id = 0; trajectory_id < pose_graph_proto.trajectory().size();++trajectory_id) {
+    const carto::mapping::proto::Trajectory& trajectory_proto = pose_graph_proto.trajectory(trajectory_id);
+    for (int i = 0; i < trajectory_proto.node_size(); ++i) {
+      const ::cartographer::mapping::proto::Trajectory_Node& node = trajectory_proto.node(i);
+      const ::cartographer::transform::proto::Vector3d& translation=node.pose().translation();
+      const ::cartographer::transform::proto::Quaterniond& rotation=node.pose().rotation();
+      Eigen::Quaterniond quaternion_map_base(rotation.w(),rotation.x(),rotation.y(),rotation.z());
+      Eigen::Translation3d translation_map_base(translation.x(), translation.y(), translation.z());
+      Eigen::Matrix4d trans_map_base = (translation_map_base * quaternion_map_base).matrix();
 
-	// yaw (z-axis rotation)
-	double siny_cosp = +2.0 * (q.w() * q.z() + q.x() * q.y());
-	double cosy_cosp = +1.0 - 2.0 * (q.y() * q.y() + q.z() * q.z());  
-	yaw = atan2(siny_cosp, cosy_cosp);
+      // 
+      Eigen::AngleAxisd rotation_base_output(0.0, Eigen::Vector3d::UnitZ());
+      Eigen::Translation3d translation_base_output(-0.825123, 0.000, -0.942);
+      Eigen::Matrix4d trans_base_output = (translation_base_output * rotation_base_output).matrix();
 
-  yaw =yaw*180.0/M_PI ; 
-  pitch = pitch*180.0/M_PI; 
-  roll = roll*180.0/M_PI;
-}
+      //
+      Eigen::AngleAxisd rotation_utm_output(-146.7875591/180.0*M_PI, Eigen::Vector3d::UnitZ());
+      Eigen::Translation3d translation_utm_output(457074.7411138645, 4404764.041069881, 21.0145);
+      Eigen::Matrix4d trans_utm_map = (translation_utm_output * rotation_utm_output).matrix() * trans_base_output.inverse(); 
+      // std::cout << std::setprecision(12) << "trans_utm_map translation = \n" << trans_utm_map.block<3, 1>(0, 3) << std::endl 
+      // << "trans_utm_map euler = \n" << trans_utm_map.block<3, 3>(0, 0).eulerAngles(0, 1, 2) << std::endl;
 
-  void ExportPbstream(const std::string& pbstream_filename) {
-    carto::io::ProtoStreamReader reader(pbstream_filename);
-    carto::io::ProtoStreamDeserializer deserializer(&reader);
+      Eigen::Matrix4d trans_utm_output = trans_utm_map * trans_map_base * trans_base_output;
+      Eigen::Quaterniond quaternion_utm_output(trans_utm_output.block<3, 3>(0, 0));
 
-    carto::mapping::proto::PoseGraph pose_graph_proto = deserializer.pose_graph();
-    
-    for (size_t trajectory_id = 0; trajectory_id < pose_graph_proto.trajectory().size();
-        ++trajectory_id) {
-      const carto::mapping::proto::Trajectory& trajectory_proto =
-          pose_graph_proto.trajectory(trajectory_id);
-
-      for (int i = 0; i < trajectory_proto.node_size(); ++i) {
-        const ::cartographer::mapping::proto::Trajectory_Node& node = trajectory_proto.node(i);
-      // node.pose() contains the pose...
-        const ::cartographer::transform::proto::Vector3d& translation=node.pose().translation();
-        const ::cartographer::transform::proto::Quaterniond& rotation=node.pose().rotation();
-        Eigen::Quaterniond quaternion(rotation.w(),rotation.x(),rotation.y(),rotation.z());
-        double roll=0,pitch=0,yaw=0;
-        toEulerAngle(quaternion,roll,pitch,yaw);
-        // Eigen::Vector3d euler = quaternion.toRotationMatrix().eulerAngles(0,1,2);
-        // double yaw = euler[2]*180.0/M_PI ; 
-        // double pitch = euler[1]*180.0/M_PI; 
-        // double roll = euler[0]*180.0/M_PI;
-        ros::Time ros_time=::cartographer_ros::ToRos(cartographer::common::FromUniversal(node.timestamp()));
-        double time=ros_time.sec+ros_time.nsec/(double)1e9;
-        //std::cout.setf(std::ios::fixed,std::ios::floatfield);
-        //std::cout<<  <<","<<translation.x()<<","<<translation.y()<<","<<translation.z()<<","<<roll<<","<<pitch<<","<<yaw<<","<<std::endl;
-        std::cout<< setprecision(16) <<time <<" "<<translation.x()<<" "<<translation.y()<<" "<<translation.z()<<" "<<rotation.x()<<" "<<rotation.y()<<" "<<rotation.z()<<" "<<rotation.w()<<std::endl;
-        //std::cout<<quaternion.w()<<","<<quaternion.x()<<","<<quaternion.y()<<","<<quaternion.z()<<","<<rotation.w()<<","<<rotation.x()<<","<<rotation.y()<<","<<rotation.z()<<std::endl;
-      }
-
+      ros::Time ros_time=::cartographer_ros::ToRos(cartographer::common::FromUniversal(node.timestamp()));
+      double time=ros_time.sec+ros_time.nsec*1e-9;
+      std::cout<< setprecision(16) 
+      <<time 
+      <<" "<<trans_utm_output.block<3, 1>(0, 3)[0]
+      <<" "<<trans_utm_output.block<3, 1>(0, 3)[1]
+      <<" "<<trans_utm_output.block<3, 1>(0, 3)[2]
+      <<" "<<quaternion_utm_output.x()
+      <<" "<<quaternion_utm_output.y()
+      <<" "<<quaternion_utm_output.z()
+      <<" "<<quaternion_utm_output.w()<<std::endl;
     }
+
   }
-  int main(int argc, char** argv) {
-    ExportPbstream("/home/johnnysun/.ros/finish1.pbstream");
-    return 0;
+}
+// convert a pbstream to a tum file 
+// input: output->base, map->utm
+// output: output->utm
+int main(int argc, char** argv) {
+  if (argc != 2)
+  {
+    std::cout << "please specific pbstream file path!" << std::endl;
+    return -1;
   }
+  ExportPbstream(std::string(argv[1]));
+  return 0;
+}

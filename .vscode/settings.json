@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "numericaldiff": "cpp",
+        "core": "cpp",
+        "iomanip": "cpp"
+    }
+}
