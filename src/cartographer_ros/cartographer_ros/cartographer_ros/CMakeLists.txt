@@ -24,6 +24,17 @@ install(TARGETS export_traj
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+# generate pbstream
+google_binary(export_pbstream
+  SRCS
+    export_pbstream_main.cc
+)
+install(TARGETS export_pbstream
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 google_binary(cartographer_assets_writer
   SRCS
     assets_writer_main.cc
