@@ -19,5 +19,8 @@ roslaunch cartographer_ros demo_my_robot.launch bag_filename:=/home/neousys/Data
 roslaunch cartographer_ros my_robot_map_localization.launch bag_filename:=/home/neousys/Data/jdd/test1.bag
 rosrun cartographer_ros export_traj /home/neousys/Documents/test1.pbstream > /home/neousys/Documents/test1_tum.txt
 rosservice call /finish_trajectory 0
+
+#create map
+roslaunch cartographer_ros assets_writer_pcd.launch bag_filenames:=/home/neousys/Data/jdd/test1.bag pose_graph_filename:=/home/neousys/Data/jdd/test1_best.pbstream
 ```
 
