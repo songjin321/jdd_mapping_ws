@@ -88,6 +88,10 @@ int main(int argc, char **argv)
                     break;
                 }
             }
+            // trans_base_output
+            Eigen::AngleAxisd rotation_base_output(0.0, Eigen::Vector3d::UnitZ());
+            Eigen::Translation3d translation_base_output(-0.825123, 0.000, -0.942);
+            Eigen::Matrix4d trans_base_output = (translation_base_output * rotation_base_output).matrix();
 
             // initial output->utm
             Eigen::AngleAxisd rotation_utm_output_init(poses[0].yaw, Eigen::Vector3d::UnitZ());
@@ -100,7 +104,7 @@ int main(int argc, char **argv)
             //std::cout << std::setprecision(12) << "trans_utm_output translation = \n" << trans_utm_output.block<3, 1>(0, 3) << std::endl 
             //<< "trans_utm_output euler = \n" << trans_utm_output.block<3, 3>(0, 0).eulerAngles(0, 1, 2) << std::endl;
 
-            Eigen::Matrix4d trans_map_base = trans_utm_output_init.inverse() * trans_utm_output;
+            Eigen::Matrix4d trans_map_base = trans_base_output * trans_utm_output_init.inverse() * trans_utm_output * trans_base_output.inverse();
             //std::cout << std::setprecision(12) << "trans_map_base translation = \n" << trans_map_base.block<3, 1>(0, 3) << std::endl 
             //<< "trans_map_base euler = \n" << trans_map_base.block<3, 3>(0, 0).eulerAngles(0, 1, 2) << std::endl;
             Eigen::Quaterniond quat_map_base(trans_map_base.block<3, 3>(0, 0));

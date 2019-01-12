@@ -37,19 +37,19 @@ void ExportPbstream(const std::string& pbstream_filename) {
       // std::cout << std::setprecision(12) << "trans_map_base translation = \n" << trans_map_base.block<3, 1>(0, 3) << std::endl 
       // << "trans_map_base euler = \n" << trans_map_base.block<3, 3>(0, 0).eulerAngles(0, 1, 2) << std::endl;
 
-      // 
+      // trans_base_output
       Eigen::AngleAxisd rotation_base_output(0.0, Eigen::Vector3d::UnitZ());
       Eigen::Translation3d translation_base_output(-0.825123, 0.000, -0.942);
       Eigen::Matrix4d trans_base_output = (translation_base_output * rotation_base_output).matrix();
 
-      //
+      // output_map_utm
       Eigen::AngleAxisd rotation_utm_output(-146.7835234/180.0*M_PI, Eigen::Vector3d::UnitZ());
       Eigen::Translation3d translation_utm_output(457074.7411138645, 4404764.041069881, 22.0);
       Eigen::Matrix4d trans_utm_map = (translation_utm_output * rotation_utm_output).matrix(); 
       // std::cout << std::setprecision(12) << "trans_utm_map translation = \n" << trans_utm_map.block<3, 1>(0, 3) << std::endl 
       // << "trans_utm_map euler = \n" << trans_utm_map.block<3, 3>(0, 0).eulerAngles(0, 1, 2) << std::endl;
 
-      Eigen::Matrix4d trans_utm_output = trans_utm_map * trans_map_base;
+      Eigen::Matrix4d trans_utm_output = trans_utm_map * trans_base_output.inverse()* trans_map_base * trans_base_output;
       Eigen::Quaterniond quaternion_utm_output(trans_utm_output.block<3, 3>(0, 0));
 
       ros::Time ros_time=::cartographer_ros::ToRos(cartographer::common::FromUniversal(node.timestamp()));
