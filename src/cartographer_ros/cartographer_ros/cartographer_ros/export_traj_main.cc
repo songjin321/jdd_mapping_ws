@@ -42,7 +42,7 @@ void ExportPbstream(const std::string& pbstream_filename) {
       Eigen::Translation3d translation_base_output(-0.825123, 0.000, -0.942);
       Eigen::Matrix4d trans_base_output = (translation_base_output * rotation_base_output).matrix();
 
-      // output_map_utm
+      // map_utm (output frame)
       Eigen::AngleAxisd rotation_utm_output(-146.7835234/180.0*M_PI, Eigen::Vector3d::UnitZ());
       Eigen::Translation3d translation_utm_output(457074.7411138645, 4404764.041069881, 22.0);
       Eigen::Matrix4d trans_utm_map = (translation_utm_output * rotation_utm_output).matrix(); 

@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Odometry1/Status1
       Splitter Ratio: 0.600670993
     Tree Height: 775
   - Class: rviz/Selection
@@ -52,37 +53,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        compensate_imu_link:
-          Value: true
-        gps_link:
-          Value: true
-        map:
-          Value: true
-        odom:
-          Value: true
-        output_link:
-          Value: true
-        rslidar:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_link:
-              compensate_imu_link:
-                {}
-              gps_link:
-                {}
-              output_link:
-                {}
-              rslidar:
-                {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -90,32 +67,11 @@ Visualization Manager:
       Collision Enabled: false
       Enabled: true
       Links:
-        All Links Enabled:
-          {}
+        All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        compensate_imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gps_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        output_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        rslidar:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -131,9 +87,6 @@ Visualization Manager:
       Submap query service: /submap_query
       Submaps:
         All: true
-        Trajectory 0:
-          0.32: true
-          Value: true
       Topic: /submap_list
       Tracking frame: base_link
       Unreliable: false
@@ -143,7 +96,7 @@ Visualization Manager:
       Marker Topic: /trajectory_node_list
       Name: Trajectories
       Namespaces:
-        Trajectory 0: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -159,12 +112,7 @@ Visualization Manager:
       Marker Topic: /constraint_list
       Name: Constraints
       Namespaces:
-        Inter constraints, different trajectories: true
-        Inter constraints, same trajectory: true
-        Inter residuals, different trajectories: true
-        Inter residuals, same trajectory: true
-        Intra constraints: true
-        Intra residuals: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -200,8 +148,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 41.2087021
-        Min Value: 16.4043007
+        Max Value: 15.6861649
+        Min Value: -7.00823784
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -275,7 +223,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 10000
+      Keep: 100
       Name: Odometry
       Position Tolerance: 0.100000001
       Shape:
@@ -288,7 +236,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.0500000007
         Value: Arrow
-      Topic: /lidar_localization
+      Topic: /odometry/filtered
       Unreliable: false
       Value: true
   Enabled: true
@@ -316,16 +264,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 397.574219
+      Distance: 124.011803
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -36.9045296
-        Y: 18.0340595
-        Z: -18.5195866
+        X: 0.0776363313
+        Y: 32.3603172
+        Z: -18.5565681
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
